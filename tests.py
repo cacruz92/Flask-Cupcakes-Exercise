@@ -107,3 +107,46 @@ class CupcakeViewsTestCase(TestCase):
             })
 
             self.assertEqual(Cupcake.query.count(), 2)
+
+    def test_delete_cupcake(self):
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{self.cupcake.id}"
+            resp = client.delete(url)
+
+            self.assertEqual(resp.status_code, 200)
+
+            data = resp.json
+            self.assertEqual(data, {"message": "deleted"})
+
+            # Verify that the cupcake has been deleted from the database
+            self.assertIsNone(Cupcake.query.get(self.cupcake.id))
+
+    def test_update_cupcake(self):
+        with app.test_client() as client:
+            url = f"/api/cupcakes/{self.cupcake.id}"
+            updated_data = {
+                "flavor": "UpdatedFlavor",
+                "size": "UpdatedSize",
+                "rating": 8,
+                "image": "http://test.com/updated_cupcake.jpg"
+            }
+            
+            resp = client.patch(url, json=updated_data)
+
+            self.assertEqual(resp.status_code, 200)
+
+            data = resp.json
+            self.assertEqual(data["cupcake"]["flavor"], updated_data["flavor"])
+            self.assertEqual(data["cupcake"]["size"], updated_data["size"])
+            self.assertEqual(data["cupcake"]["rating"], updated_data["rating"])
+            self.assertEqual(data["cupcake"]["image"], updated_data["image"])
+
+            # Verify that the cupcake has been updated in the database
+            updated_cupcake = Cupcake.query.get(self.cupcake.id)
+            self.assertEqual(updated_cupcake.flavor, updated_data["flavor"])
+            self.assertEqual(updated_cupcake.size, updated_data["size"])
+            self.assertEqual(updated_cupcake.rating, updated_data["rating"])
+            self.assertEqual(updated_cupcake.image, updated_data["image"])
+
+if __name__ == '__main__':
+    unittest.main()
