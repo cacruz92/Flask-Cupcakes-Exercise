@@ -1,10 +1,12 @@
 """Flask app for Cupcakes"""
 
 from flask import Flask, request, jsonify, render_template
-
+from flask_cors import CORS
 from models import db, connect_db, Cupcake
 
+
 app = Flask(__name__)
+CORS(app) 
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///cupcakes'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -84,6 +86,10 @@ def delete_cupcake(cupcake_id):
     db.session.commit()
     return jsonify(message='deleted')
 
+@app.route('/')
+def show_index():
+    cupcakes = Cupcake.query.all()
+    return render_template('index.html', cupcakes=cupcakes)
 
 
 if __name__ == '__main__':
